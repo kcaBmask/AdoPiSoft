@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 # Print green header
 echo -e "${GREEN}#########################################################################${NC}\\n"
-echo -e "${BOLD}                  AdoPisoft automatic install script${NC}"
+echo -e "${BOLD}                  AdoPisoft Automatic Install Script${NC}"
 
 # Bash ASCII logo with green text and no background color
 echo -e "${GREEN}
