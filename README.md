@@ -1,12 +1,12 @@
 # adopisoft
-Adopisoft Automatic Install Script
-wget https://raw.githubusercontent.com/kcaBmask/adopisoft/main/adopisoft5.1.5.sh
-sudo bash a+x adopisoft5.1.5.sh
+Adopisoft Automatic Install Script<br><br><br>
+wget https://raw.githubusercontent.com/kcaBmask/adopisoft/main/adopisoft5.1.5.sh<br>
+sudo bash a+x adopisoft5.1.5.sh<br>
 
 
-Database Type: postgres
-Host/IP: localhost
-Port Number:
-Database Name: adopisoft
-Username: adopisoft
-Password: adopisoft
+Database Type: postgres<br>
+Host/IP: localhost<br>
+Port Number:<br>
+Database Name: adopisoft<br>
+Username: adopisoft<br>
+Password: adopisoft<br>
