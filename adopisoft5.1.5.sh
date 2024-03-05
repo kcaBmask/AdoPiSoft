@@ -51,8 +51,7 @@ read -p "Do you want to install PostgreSQL? (y/n):" install_psql
 if [ "$install_psql" == "y" ]; then
     # Download ado-psql-script.sh
     echo -e "${BOLD}Downloading ado-psql-script.sh...${NC}"
-    wget -O ado-psql-script.sh https://gist.githubusercontent.com/alenteria/791dbe32175a01d1f1b602b25489ad22/raw/9a5aa879ac70d24bd9a7dd7f8ed97d7fe2c2f597/ado-psql-script.sh >/dev/null 2>&1
-
+    wget -O ado-psql-script.sh https://gist.githubusercontent.com/kcaBmask/77292e0f47d3e2b66ad06021b42226cf/raw/b7817048e21483a82c50bf89a3affabb8d2e6c4b/ado-psql-script.sh
     # Set execute permissions
     echo -e "${BOLD}Setting execute permissions for ado-psql-script.sh...${NC}"
     sudo chmod a+x ./ado-psql-script.sh
