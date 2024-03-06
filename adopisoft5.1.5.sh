@@ -1,14 +1,18 @@
 #!/bin/bash
 
 # Define ANSI escape code for bold, green color, and no color
+RED='\033[1;31m'
 BOLD='\033[1;32m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+# Capture start time
+start_time=$(date +%s)
+
 # Print green header
 echo -e "${GREEN}#########################################################################${NC}\\n"
-echo -e "${BOLD}                  AdoPisoft Automatic Install Script${NC}"
-
+echo -e "${BOLD}                  AdoPisoft automatic install script${NC}"
+echo -e "${BOLD} To avoid conflicts, use this script in a fresh install of Ubuntu 22.04${NC}"
 # Bash ASCII logo with green text and no background color
 echo -e "${GREEN}
         __                ___.                          __    
@@ -47,11 +51,12 @@ wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft
 sudo apt-get install /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1
 
 # Ask if user wants to install PostgreSQL
-read -p "Do you want to install PostgreSQL? (y/n):" install_psql
+read -p "$(echo -e ${BOLD}${RED})Do you want to install PostgreSQL? (y/n): $(echo -e ${NC})" install_psql
 if [ "$install_psql" == "y" ]; then
     # Download ado-psql-script.sh
     echo -e "${BOLD}Downloading ado-psql-script.sh...${NC}"
-    wget -O ado-psql-script.sh https://gist.githubusercontent.com/kcaBmask/77292e0f47d3e2b66ad06021b42226cf/raw/b7817048e21483a82c50bf89a3affabb8d2e6c4b/ado-psql-script.sh
+    wget -O ado-psql-script.sh https://gist.githubusercontent.com/alenteria/791dbe32175a01d1f1b602b25489ad22/raw/9a5aa879ac70d24bd9a7dd7f8ed97d7fe2c2f597/ado-psql-script.sh >/dev/null 2>&1
+
     # Set execute permissions
     echo -e "${BOLD}Setting execute permissions for ado-psql-script.sh...${NC}"
     sudo chmod a+x ./ado-psql-script.sh
@@ -72,4 +77,11 @@ echo -e "${BOLD}Restarting AdoPisoft...${NC}"
 
 sudo systemctl start adopisoft
 
-echo -e "${BOLD}Script execution completed.${NC}"
+# Capture end time
+end_time=$(date +%s)
+
+# Calculate and print the total execution time in minutes and seconds
+execution_time=$((end_time - start_time))
+minutes=$((execution_time / 60))
+seconds=$((execution_time % 60))
+echo -e "${BOLD}Script execution completed in ${minutes} minutes and ${seconds} seconds.${NC}"
