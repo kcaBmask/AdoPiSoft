@@ -5,6 +5,9 @@ sudo chmod a+x adopisoft5.1.5.sh<br>
 bash adopisoft5.1.5.sh
 
 
+##############################
+
+Postgres Database Information
 Database Type: postgres<br>
 Host/IP: localhost<br>
 Port Number:<br>
