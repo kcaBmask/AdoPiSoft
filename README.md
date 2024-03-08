@@ -1,5 +1,5 @@
 # adopisoft
-Adopisoft Automatic Install Script<br><br>
+Adopisoft Automatic Install Script<br>You need to have Ubuntu Server installled before using this script<br>Tested using Ubuntu 22.04<br>
 Copy and paste this 3 commands in the terminal<br><br>
  wget https://raw.githubusercontent.com/kcaBmask/adopisoft/main/adopisoft5.1.5.sh<br>
  sudo chmod a+x adopisoft5.1.5.sh<br>
