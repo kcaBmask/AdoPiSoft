@@ -12,7 +12,7 @@ LOG_FILE="/tmp/adopisoft_install.log"
 # Function to print messages
 print_message() {
     echo -e "$1$2${NC}"
-    echo -e "$2" >> "$LOG_FILE"
+    echo -e "$2" | sudo tee -a "$LOG_FILE"
 }
 
 # Function to check command success
@@ -72,12 +72,12 @@ for package in "${install_packages[@]}"; do
     check_success "$package installation failed."
 done
 
-# Install Node.js version 16.4.0
-print_message "$BOLD" "Installing Node.js version 16.4.0..."
-curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash - >> "$LOG_FILE" 2>&1
-check_success "Node.js setup script failed."
+# Install Node.js version 18.x
+print_message "$BOLD" "Installing Node.js version 18.x..."
+curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - >> "$LOG_FILE" 2>&1
+check_success "Node.js setup script failed. Check the log file for details."
 sudo apt-get install -y nodejs >> "$LOG_FILE" 2>&1
-check_success "Node.js installation failed."
+check_success "Node.js installation failed. Check the log file for details."
 
 # Download and install AdoPiSoft
 print_message "$BOLD" "Downloading and installing AdoPiSoft..."
@@ -91,7 +91,7 @@ read -p "$(echo -e ${BOLD}${RED})Do you want to install PostgreSQL? (y/n): $(ech
 if [ "$install_psql" == "y" ]; then
     # Download ado-psql-script.sh
     print_message "$BOLD" "Downloading ado-psql-script.sh..."
-    wget -O ado-psql-script.sh https://gist.githubusercontent.com/kcaBmask/77292e0f47d3e2b66ad06021b42226cf/raw/b7817048e21483a82c50bf89a3affabb8d2e6c4b/ado-psql-script.sh >> "$LOG_FILE" 2>&1
+    wget -O ado-psql-script.sh https://gist.githubusercontent.com/alenteria/791dbe32175a01d1f1b602b25489ad22/raw/9a5aa879ac70d24bd9a7dd7f8ed97d7fe2c2f597/ado-psql-script.sh >> "$LOG_FILE" 2>&1
     check_success "ado-psql-script.sh download failed."
 
     # Set execute permissions
