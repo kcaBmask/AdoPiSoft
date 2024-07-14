@@ -1,5 +1,3 @@
-Adopisoft install
-
 #!/bin/bash
 
 # Define ANSI escape code for bold, green color, and no color
