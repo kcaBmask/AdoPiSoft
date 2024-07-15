@@ -1,121 +1,213 @@
 #!/bin/bash
 
-# Define ANSI escape code for bold, green color, and no color
+# Define ANSI escape codes for colors and bold text
 RED='\033[1;31m'
-BOLD='\033[1;32m'
+BOLD_GREEN='\033[1;32m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Log file
-LOG_FILE="/tmp/adopisoft_install.log"
-
-# Function to print messages
-print_message() {
-    echo -e "$1$2${NC}"
-    echo -e "$2" | sudo tee -a "$LOG_FILE"
+# Function to print messages in bold green
+print_bold() {
+    echo -e "${BOLD_GREEN}$1${NC}"
 }
 
-# Function to check command success
-check_success() {
-    if [ $? -ne 0 ]; then
-        print_message "$RED" "Error: $1"
-        exit 1
-    fi
+# Function to print error messages in red
+print_error() {
+    echo -e "${RED}$1${NC}"
 }
 
 # Capture start time
 start_time=$(date +%s)
 
-# Print green header
-print_message "$GREEN" "#########################################################################\\n"
-print_message "$BOLD" "                  AdoPisoft automatic install script"
-print_message "$BOLD" " To avoid conflicts, use this script in a fresh install of Ubuntu 22.04"
-print_message "$GREEN" "
+# Print script header
+echo -e "${GREEN}#########################################################################${NC}\n"
+print_bold "AdoPisoft Automatic Install Script"
+print_bold "To avoid conflicts, use this script in a fresh install of Ubuntu 22.04"
+echo -e "${GREEN}
         __                ___.                          __    
        |  | __ ____ _____ \\_ |__   _____ _____    _____|  | __
        |  |/ // ___\\__  \\ | __ \\ /     \\__  \\  /  ___/  |/ /
        |    <\\  \\___ / __ \\| \\_\\ \\  Y Y  \\/ __ \\_\\___ \\|    < 
        |__|_ \\___  >____  /___  /__|_|  (____  /____  >__|_ \\
            \\/    \\/     \\/    \\/      \\/     \\/     \\/     \\/
-"
-print_message "$GREEN" "#########################################################################\\n"
+${NC}"
+echo -e "${GREEN}#########################################################################${NC}\n"
 
 # Update and upgrade system
-print_message "$BOLD" "Updating and upgrading system..."
-sudo apt-get update >> "$LOG_FILE" 2>&1 && sudo apt-get upgrade -y >> "$LOG_FILE" 2>&1
-check_success "System update and upgrade failed."
+print_bold "Updating and upgrading system..."
+if sudo apt update >/dev/null 2>&1 && sudo apt upgrade -y >/dev/null 2>&1; then
+    print_bold "System updated and upgraded successfully."
+else
+    print_error "Failed to update and upgrade the system."
+    exit 1
+fi
 
 # Install required packages
-install_packages=(
-    "curl"
-    "nodejs"
-    "python2"
-    "nginx"
-    "bind9"
-    "isc-dhcp-server"
-    "iptables"
-    "hostapd"
-    "dmidecode"
-    "build-essential"
-    "openssh-server"
-    "python-pip"
-    "unzip"
-    "bridge-utils"
-    "git"
-    "iputils-arping"
-)
+print_bold "Installing curl..."
+if sudo apt install curl -y >/dev/null 2>&1; then
+    print_bold "Curl installed successfully."
+else
+    print_error "Failed to install curl."
+    exit 1
+fi
 
-print_message "$BOLD" "Installing required packages..."
-for package in "${install_packages[@]}"; do
-    print_message "$BOLD" "Installing $package..."
-    sudo apt-get install -y $package >> "$LOG_FILE" 2>&1
-    check_success "$package installation failed."
-done
+# Install Node.js version 16.4.0
+print_bold "Installing Node.js version 16.4.0..."
+if curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash - >/dev/null 2>&1 && sudo apt install -y nodejs >/dev/null 2>&1; then
+    print_bold "Node.js installed successfully."
+else
+    print_error "Failed to install Node.js."
+    exit 1
+fi
 
-# Install Node.js version 18.x
-print_message "$BOLD" "Installing Node.js version 18.x..."
-curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - >> "$LOG_FILE" 2>&1
-check_success "Node.js setup script failed. Check the log file for details."
-sudo apt-get install -y nodejs >> "$LOG_FILE" 2>&1
-check_success "Node.js installation failed. Check the log file for details."
+print_bold "Installing Python 2..."
+if sudo apt install -y python2 >/dev/null 2>&1; then
+    sudo ln -s $(which python2) /usr/bin/python >/dev/null 2>&1
+    print_bold "Python 2 installed successfully."
+else
+    print_error "Failed to install Python 2."
+    exit 1
+fi
+
+print_bold "Installing Nginx..."
+if sudo apt install -y nginx >/dev/null 2>&1; then
+    print_bold "Nginx installed successfully."
+else
+    print_error "Failed to install Nginx."
+    exit 1
+fi
+
+print_bold "Installing Bind9..."
+if sudo apt install -y bind9 >/dev/null 2>&1; then
+    print_bold "Bind9 installed successfully."
+else
+    print_error "Failed to install Bind9."
+    exit 1
+fi
+
+print_bold "Installing ISC DHCP Server..."
+if sudo apt install -y isc-dhcp-server >/dev/null 2>&1; then
+    print_bold "ISC DHCP Server installed successfully."
+else
+    print_error "Failed to install ISC DHCP Server."
+    exit 1
+fi
+
+print_bold "Installing iptables..."
+if sudo apt install -y iptables >/dev/null 2>&1; then
+    print_bold "iptables installed successfully."
+else
+    print_error "Failed to install iptables."
+    exit 1
+fi
+
+print_bold "Installing hostapd..."
+if sudo apt install -y hostapd >/dev/null 2>&1; then
+    print_bold "hostapd installed successfully."
+else
+    print_error "Failed to install hostapd."
+    exit 1
+fi
+
+print_bold "Installing dmidecode..."
+if sudo apt install -y dmidecode >/dev/null 2>&1; then
+    print_bold "dmidecode installed successfully."
+else
+    print_error "Failed to install dmidecode."
+    exit 1
+fi
+
+print_bold "Installing build-essential..."
+if sudo apt install -y build-essential >/dev/null 2>&1; then
+    print_bold "build-essential installed successfully."
+else
+    print_error "Failed to install build-essential."
+    exit 1
+fi
+
+print_bold "Installing OpenSSH Server..."
+if sudo apt install -y openssh-server >/dev/null 2>&1; then
+    print_bold "OpenSSH Server installed successfully."
+else
+    print_error "Failed to install OpenSSH Server."
+    exit 1
+fi
+
+print_bold "Installing Python pip..."
+if sudo apt install -y python-pip >/dev/null 2>&1; then
+    print_bold "Python pip installed successfully."
+else
+    print_error "Failed to install Python pip."
+    exit 1
+fi
+
+print_bold "Installing unzip..."
+if sudo apt install -y unzip >/dev/null 2>&1; then
+    print_bold "unzip installed successfully."
+else
+    print_error "Failed to install unzip."
+    exit 1
+fi
+
+print_bold "Installing bridge-utils..."
+if sudo apt install -y bridge-utils >/dev/null 2>&1; then
+    print_bold "bridge-utils installed successfully."
+else
+    print_error "Failed to install bridge-utils."
+    exit 1
+fi
+
+print_bold "Installing git..."
+if sudo apt install -y git >/dev/null 2>&1; then
+    print_bold "git installed successfully."
+else
+    print_error "Failed to install git."
+    exit 1
+fi
+
+print_bold "Installing arping..."
+if sudo apt install -y iputils-arping >/dev/null 2>&1; then
+    print_bold "arping installed successfully."
+else
+    print_error "Failed to install arping."
+    exit 1
+fi
 
 # Download and install AdoPiSoft
-print_message "$BOLD" "Downloading and installing AdoPiSoft..."
-wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >> "$LOG_FILE" 2>&1
-check_success "AdoPiSoft download failed."
-sudo apt-get install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >> "$LOG_FILE" 2>&1
-check_success "AdoPiSoft installation failed."
-
-# Ask if user wants to install PostgreSQL
-read -p "$(echo -e ${BOLD}${RED})Do you want to install PostgreSQL? (y/n): $(echo -e ${NC})" install_psql
-if [ "$install_psql" == "y" ]; then
-    # Download ado-psql-script.sh
-    print_message "$BOLD" "Downloading ado-psql-script.sh..."
-    wget -O ado-psql-script.sh https://gist.githubusercontent.com/alenteria/791dbe32175a01d1f1b602b25489ad22/raw/9a5aa879ac70d24bd9a7dd7f8ed97d7fe2c2f597/ado-psql-script.sh >> "$LOG_FILE" 2>&1
-    check_success "ado-psql-script.sh download failed."
-
-    # Set execute permissions
-    print_message "$BOLD" "Setting execute permissions for ado-psql-script.sh..."
-    sudo chmod a+x ./ado-psql-script.sh
-    check_success "Setting execute permissions for ado-psql-script.sh failed."
-
-    # Execute ado-psql-script.sh
-    print_message "$BOLD" "Executing ado-psql-script.sh..."
-    sudo ./ado-psql-script.sh >> "$LOG_FILE" 2>&1
-    check_success "ado-psql-script.sh execution failed."
-
-    print_message "$BOLD" "PostgreSQL installation completed."
+print_bold "Downloading and installing AdoPiSoft..."
+if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1 && sudo apt install /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
+    print_bold "AdoPiSoft installed successfully."
 else
-    print_message "$BOLD" "PostgreSQL installation skipped."
+    print_error "Failed to install AdoPiSoft."
+    exit 1
+fi
+
+# Install PostgreSQL
+print_bold "Installing PostgreSQL..."
+if wget -O ado-psql-script.sh https://gist.githubusercontent.com/kcaBmask/77292e0f47d3e2b66ad06021b42226cf/raw/b7817048e21483a82c50bf89a3affabb8d2e6c4b/ado-psql-script.sh >/dev/null 2>&1; then
+    print_bold "Setting execute permissions for ado-psql-script.sh..."
+    sudo chmod a+x ./ado-psql-script.sh
+
+    print_bold "Executing ado-psql-script.sh..."
+    if sudo ./ado-psql-script.sh >/dev/null 2>&1; then
+        print_bold "PostgreSQL installation completed."
+    else
+        print_error "Failed to execute ado-psql-script.sh."
+        exit 1
+    fi
+else
+    print_error "Failed to download ado-psql-script.sh."
+    exit 1
 fi
 
 # Enable and start AdoPiSoft service
-print_message "$BOLD" "Enabling AdoPiSoft service..."
-sudo systemctl enable adopisoft >> "$LOG_FILE" 2>&1
-check_success "Enabling AdoPiSoft service failed."
-print_message "$BOLD" "Starting AdoPiSoft..."
-sudo systemctl start adopisoft >> "$LOG_FILE" 2>&1
-check_success "Starting AdoPiSoft service failed."
+print_bold "Enabling AdoPiSoft service..."
+if sudo systemctl enable adopisoft && sudo systemctl start adopisoft; then
+    print_bold "AdoPiSoft service enabled and started successfully."
+else
+    print_error "Failed to enable or start AdoPiSoft service."
+    exit 1
+fi
 
 # Capture end time
 end_time=$(date +%s)
@@ -124,4 +216,4 @@ end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 minutes=$((execution_time / 60))
 seconds=$((execution_time % 60))
-print_message "$BOLD" "Script execution completed in ${minutes} minutes and ${seconds} seconds."
+print_bold "Script execution completed in ${minutes} minutes and ${seconds} seconds."
