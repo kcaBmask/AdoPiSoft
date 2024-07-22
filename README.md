@@ -1,4 +1,4 @@
-# adopisoft
+# AdoPiSoft
 Adopisoft Automatic Install Script<br>You need to have Ubuntu Server installled before using this script<br>Tested using Ubuntu 22.04<br>
 
 Copy and paste this command in the terminal<br><br>
