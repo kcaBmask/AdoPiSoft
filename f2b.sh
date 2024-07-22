@@ -9,7 +9,7 @@ NC='\033[0m' # No Color
 # Print green header
 echo -e "${GREEN}#########################################################################${NC}"
 echo -e "${BOLD}                 
-echo -e "${BOLD}"                 AdoPisoft fail2ban install script${NC}"
+echo -e "${BOLD}                 AdoPisoft fail2ban install script${NC}"
 
 # Bash ASCII logo with green text and no background color
 echo -e "${GREEN}
