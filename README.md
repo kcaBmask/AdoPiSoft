@@ -21,4 +21,6 @@ Password: adopisoft<br>
 AdoPiSoft fail2ban install script.<br>
 
 wget https://raw.githubusercontent.com/kcaBmask/adopisoft/main/f2b.sh && sudo chmod a+x f2b.sh && bash f2b.sh<br>
-default ban time for sshd and adopisoft 10 minutes.
+Default ban time for sshd and adopisoft 10 minutes.<br>
+To check all the banned ip address type this command: fail2ban-client banned<br>
+To unban ip address type this command: fail2ban-client unban ipaddresshere
