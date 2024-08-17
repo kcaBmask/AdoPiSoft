@@ -21,7 +21,7 @@ start_time=$(date +%s)
 
 # Print script header
 echo -e "${GREEN}#########################################################################${NC}\n"
-print_bold "AdoPiSoft Automatic Install Script"
+print_bold                          "AdoPiSoft Automatic Install Script"
 echo -e "${GREEN}
         __                ___.                          __    
        |  | __ ____ _____ \\_ |__   _____ _____    _____|  | __
@@ -81,7 +81,101 @@ if [ "$os_version" == "18.04" ]; then
         exit 1
     fi
 
-    # (Continue with the rest of the package installations for Ubuntu 18.04)
+    print_bold "Installing Bind9..."
+    if sudo apt install -y bind9 >/dev/null 2>&1; then
+        print_bold "Bind9 installed successfully."
+    else
+        print_error "Failed to install Bind9."
+        exit 1
+    fi
+
+    print_bold "Installing ISC DHCP Server..."
+    if sudo apt install -y isc-dhcp-server >/dev/null 2>&1; then
+        print_bold "ISC DHCP Server installed successfully."
+    else
+        print_error "Failed to install ISC DHCP Server."
+        exit 1
+    fi
+
+    print_bold "Installing iptables..."
+    if sudo apt install -y iptables >/dev/null 2>&1; then
+        print_bold "iptables installed successfully."
+    else
+        print_error "Failed to install iptables."
+        exit 1
+    fi
+
+    print_bold "Installing hostapd..."
+    if sudo apt install -y hostapd >/dev/null 2>&1; then
+        print_bold "hostapd installed successfully."
+    else
+        print_error "Failed to install hostapd."
+        exit 1
+    fi
+
+    print_bold "Installing dmidecode..."
+    if sudo apt install -y dmidecode >/dev/null 2>&1; then
+        print_bold "dmidecode installed successfully."
+    else
+        print_error "Failed to install dmidecode."
+        exit 1
+    fi
+
+    print_bold "Installing build-essential..."
+    if sudo apt install -y build-essential >/dev/null 2>&1; then
+        print_bold "build-essential installed successfully."
+    else
+        print_error "Failed to install build-essential."
+        exit 1
+    fi
+
+    print_bold "Installing OpenSSH Server..."
+    if sudo apt install -y openssh-server >/dev/null 2>&1; then
+        print_bold "OpenSSH Server installed successfully."
+    else
+        print_error "Failed to install OpenSSH Server."
+        exit 1
+    fi
+
+    print_bold "Installing Python pip..."
+    if sudo apt install -y python-pip >/dev/null 2>&1; then
+        print_bold "Python pip installed successfully."
+    else
+        print_error "Failed to install Python pip."
+        exit 1
+    fi
+
+    print_bold "Installing unzip..."
+    if sudo apt install -y unzip >/dev/null 2>&1; then
+        print_bold "unzip installed successfully."
+    else
+        print_error "Failed to install unzip."
+        exit 1
+    fi
+
+    print_bold "Installing bridge-utils..."
+    if sudo apt install -y bridge-utils >/dev/null 2>&1; then
+        print_bold "bridge-utils installed successfully."
+    else
+        print_error "Failed to install bridge-utils."
+        exit 1
+    fi
+
+    print_bold "Installing git..."
+    if sudo apt install -y git >/dev/null 2>&1; then
+        print_bold "git installed successfully."
+    else
+        print_error "Failed to install git."
+        exit 1
+    fi
+
+    print_bold "Installing arping..."
+    if sudo apt install -y iputils-arping >/dev/null 2>&1; then
+        print_bold "arping installed successfully."
+    else
+        print_error "Failed to install arping."
+        exit 1
+    fi
 
     # Download and install AdoPiSoft
     print_bold "Downloading and installing AdoPiSoft..."
