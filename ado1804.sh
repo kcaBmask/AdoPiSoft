@@ -178,13 +178,14 @@ if [ "$os_version" == "18.04" ]; then
     fi
 
     # Download and install AdoPiSoft
-    print_bold "Downloading and installing AdoPiSoft..."
-    if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1 && sudo apt install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
-        print_bold "AdoPiSoft installed successfully."
-    else
-        print_error "Failed to install AdoPiSoft."
-        exit 1
-    fi
+print_bold "Downloading and installing AdoPiSoft..."
+if sudo wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1 && sudo apt install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
+    print_bold "AdoPiSoft installed successfully."
+else
+    print_error "Failed to install AdoPiSoft."
+    exit 1
+fi
+
 
     # Install PostgreSQL
     print_bold "Installing PostgreSQL..."
