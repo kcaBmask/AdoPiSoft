@@ -356,15 +356,15 @@ elif [ "$os_version" == "22.04" ]; then
         exit 1
     fi
 
-    # Download and install AdoPiSoft
-    print_bold "Downloading and installing AdoPiSoft..."
-    if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1 sudo apt install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
-        print_bold "AdoPiSoft installed successfully."
-    else
-        print_error "Failed to install AdoPiSoft."
-        exit 1
-    fi
-
+   
+ # Download the AdoPiSoft .deb file
+if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb; then
+    # Install the downloaded .deb file
+    sudo apt install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb
+    echo "Installation of AdoPiSoft completed successfully."
+else
+    echo "Download failed. Please check the URL or network connection."
+fi
     # Install PostgreSQL
     print_bold "Installing PostgreSQL..."
     if wget -O ado-psql-script.sh https://gist.githubusercontent.com/kcaBmask/77292e0f47d3e2b66ad06021b42226cf/raw/b7817048e21483a82c50bf89a3affabb8d2e6c4b/ado-psql-script.sh >/dev/null 2>&1; then
