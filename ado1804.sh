@@ -360,10 +360,10 @@ elif [ "$os_version" == "22.04" ]; then
  # Download the AdoPiSoft .deb file
 if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb; then
     # Install the downloaded .deb file
-    sudo apt install -y /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb
-    echo "Installation of AdoPiSoft completed successfully."
+    sudo apt install /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb
+    print_bold "Installation of AdoPiSoft completed successfully."
 else
-    echo "Download failed. Please check the URL or network connection."
+    print_bold "Download failed. Please check the URL or network connection."
 fi
     # Install PostgreSQL
     print_bold "Installing PostgreSQL..."
