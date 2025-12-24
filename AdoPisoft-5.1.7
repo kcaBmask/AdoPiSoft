@@ -1,0 +1,125 @@
+#!/bin/bash
+# ======================================================
+# AdoPiSoft + PostgreSQL Automated Installation Script
+# Ubuntu Server 24.04.3 (x64/x86_64)
+# ======================================================
+
+# --- Require root privileges ---
+if [ "$EUID" -ne 0 ]; then
+    echo "======================================================"
+    echo "  ⚠️  This script must be run as root or with sudo!"
+    echo "  Example: sudo bash install_adopisoft.sh"
+    echo "======================================================"
+    exit 1
+fi
+
+GREEN="\e[32m"
+YELLOW="\e[33m"
+RED="\e[31m"
+NC="\e[0m" # No Color
+
+set -e
+
+echo -e "${GREEN}======================================================"
+echo -e "      AdoPiSoft + PostgreSQL Automated Installer"
+echo -e "======================================================${NC}"
+sleep 2
+
+# --- Update System ---
+echo -e "${YELLOW}[1/11] Updating system packages...${NC}"
+apt-get update && apt-get upgrade -y
+
+# --- Install curl ---
+echo -e "${YELLOW}[2/11] Installing curl...${NC}"
+apt-get install -y curl
+
+# --- Setup Node.js 16 Repository ---
+echo -e "${YELLOW}[3/11] Setting up Node.js 16.x repository...${NC}"
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
+
+# --- Install Core Packages ---
+echo -e "${YELLOW}[4/11] Installing Node.js, Python, and network services...${NC}"
+if apt-get install -y nodejs python nginx bind9 isc-dhcp-server; then
+    echo -e "${GREEN}Python installed successfully.${NC}"
+elif apt-get install -y nodejs python2 nginx bind9 isc-dhcp-server; then
+    ln -sf "$(which python2)" /usr/bin/python
+    echo -e "${GREEN}Using Python2.${NC}"
+elif apt-get install -y nodejs python3 nginx bind9 isc-dhcp-server; then
+    ln -sf "$(which python3)" /usr/bin/python
+    echo -e "${GREEN}Using Python3.${NC}"
+else
+    echo -e "${RED}[ERROR] Could not install Python.${NC}"
+    exit 1
+fi
+
+# --- Install Additional Tools ---
+echo -e "${YELLOW}[5/11] Installing dependencies and utilities...${NC}"
+if apt-get install -y iptables hostapd dmidecode build-essential openssh-server python-pip unzip bridge-utils git iputils-arping; then
+    echo -e "${GREEN}Installed with python-pip.${NC}"
+else
+    apt-get install -y iptables hostapd dmidecode build-essential openssh-server python3-pip unzip bridge-utils git iputils-arping
+fi
+
+# --- Download AdoPiSoft Package ---
+echo -e "${YELLOW}[6/11] Downloading AdoPiSoft v5.1.7 package...${NC}"
+wget -O /tmp/adopisoft-5.1.7-amd64-node-v16.20.2.deb \
+https://github.com/AdoPiSoft/Releases/releases/download/v5.1.7-20251213/adopisoft-5.1.7-20251213-amd64-node-v16.20.2.deb
+
+# --- Install AdoPiSoft ---
+echo -e "${YELLOW}[7/11] Installing AdoPiSoft...${NC}"
+apt-get install -y /tmp/adopisoft-5.1.7-amd64-node-v16.20.2.deb
+
+# --- Enable and Start AdoPiSoft Service ---
+echo -e "${YELLOW}[8/11] Enabling AdoPiSoft service...${NC}"
+systemctl enable adopisoft
+systemctl start adopisoft
+
+# --- Install PostgreSQL ---
+echo -e "${YELLOW}[9/11] Installing PostgreSQL...${NC}"
+apt-get install -y postgresql postgresql-contrib
+
+# --- PostgreSQL Settings ---
+DB_USER="adopisoft"
+DB_PASS="adopisoft"
+DB_NAME="adopisoft"
+
+echo -e "${YELLOW}Configuring PostgreSQL user and database...${NC}"
+
+# Set a password for postgres
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '${DB_PASS}';"
+
+# Create user adopisoft
+sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1 || \
+sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
+
+# Create database adopisoft
+sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1 || \
+sudo -u postgres createdb -O ${DB_USER} ${DB_NAME}
+
+# Reload & enable PostgreSQL
+service postgresql reload
+systemctl enable postgresql.service
+
+# --- Disable SSH for Security ---
+echo -e "${YELLOW}[10/11] Disabling SSH service for security...${NC}"
+systemctl disable ssh
+
+# --- Final Output ---
+echo -e "${GREEN}======================================================"
+echo -e "     Installation Completed Successfully!"
+echo -e "======================================================${NC}"
+
+echo
+echo "Database Settings (Use in AdoPiSoft Admin Panel):"
+echo "----------------------------------------------"
+echo "Database Type : postgres"
+echo "Host/IP       : localhost"
+echo "Port Number   : 5432"
+echo "Database Name : ${DB_NAME}"
+echo "Username      : ${DB_USER}"
+echo "Password      : ${DB_PASS}"
+echo "----------------------------------------------"
+echo
+echo -e "${YELLOW}System will reboot in 10 seconds...${NC}"
+sleep 10
+reboot
