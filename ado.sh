@@ -134,7 +134,7 @@ else
 fi
 
 print_bold "Installing Python pip..."
-if sudo apt install -y python-pip >/dev/null 2>&1; then
+if sudo apt install -y python3-pip >/dev/null 2>&1; then
     print_bold "Python pip installed successfully."
 else
     print_error "Failed to install Python pip."
@@ -175,7 +175,7 @@ fi
 
 # Download and install AdoPiSoft
 print_bold "Downloading and installing AdoPiSoft..."
-if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1 && sudo apt install /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
+if wget -O /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb https://github.com/AdoPiSoft/Releases/releases/download/v5.1.5/adopisoft-5.1.5-20250903-amd64-node-v16.4.0.deb >/dev/null 2>&1 && sudo apt install /tmp/adopisoft-5.1.5-amd64-node-v16.4.0.deb >/dev/null 2>&1; then
     print_bold "AdoPiSoft installed successfully."
 else
     print_error "Failed to install AdoPiSoft."
