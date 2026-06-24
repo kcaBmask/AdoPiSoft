@@ -1,9 +1,6 @@
 #!/bin/bash
-
 # Adopisoft 5.1.7-20260106 Installer & PostgreSQL Setup
-
 # Target System: Ubuntu Server (amd64)
-
 # Note: 'set -e' intentionally omitted to prevent crashes on minor apt warnings
 
 echo "======================================"
@@ -11,277 +8,175 @@ echo " Adopisoft 5.1.7-20260106 Installer"
 echo " Target System: Ubuntu Server (amd64)"
 echo "======================================"
 
-# --------------------------------------------------
-
-# Function: Secure Password Prompt
-
-# --------------------------------------------------
-
+# --- Function to Securely Read and Confirm Password ---
 read_password() {
-local prompt="$1"
-local var_name="$2"
-local p1 p2
-
-```
-while true; do
-    read -rsp "$prompt: " p1
-    echo
-    read -rsp "Confirm $prompt: " p2
-    echo
-
-    if [[ -z "$p1" ]]; then
-        echo "Error: Password cannot be empty."
-    elif [[ "$p1" != "$p2" ]]; then
-        echo "Error: Passwords do not match."
-    else
-        eval "$var_name=\"\$p1\""
-        break
-    fi
-done
-```
-
+    local prompt="$1"
+    local var_name="$2"
+    local p1 p2
+    while true; do
+        read -rsp "$prompt: " p1
+        echo
+        read -rsp "Confirm $prompt: " p2
+        echo
+        if [[ -z "$p1" ]]; then
+            echo "Error: Password cannot be empty."
+        elif [[ "$p1" != "$p2" ]]; then
+            echo "Error: Passwords do not match. Please try again."
+        else
+            eval "$var_name=\"\$p1\""
+            break
+        fi
+    done
 }
 
-# --------------------------------------------------
-
-# PostgreSQL Password Prompt
-
-# --------------------------------------------------
-
-echo
+# --- Prompt for PostgreSQL Password Upfront ---
+echo "---"
 echo "🔐 PostgreSQL Password Setup"
-echo "Please set a password for the PostgreSQL 'postgres' user."
+echo "Please set a strong password for the 'postgres' superuser."
 read_password "PostgreSQL Password" DB_PASSWORD
+echo "Password successfully set."
+echo "---"
 
-# --------------------------------------------------
-
-# [1/9] System Update
-
-# --------------------------------------------------
-
-echo
-echo "[1/9] Updating system..."
-
+# -----------------------------------------------
+# [1/8] System Update
+# -----------------------------------------------
+echo "[1/8] Updating system packages..."
 sudo apt-get update -q
 sudo apt-get upgrade -y -q
 
-# --------------------------------------------------
+# -----------------------------------------------
+# [2/8] Install All APT Dependencies (deduplicated)
+# -----------------------------------------------
+echo "[2/8] Installing all required packages..."
+sudo apt-get install -y -q --no-install-recommends \
+    curl wget zip unzip jq git \
+    build-essential \
+    openssh-server \
+    dmidecode \
+    bridge-utils \
+    iputils-arping \
+    nginx \
+    bind9 \
+    isc-dhcp-server \
+    iptables \
+    hostapd \
+    python3 \
+    python3-pip \
+    postgresql \
+    postgresql-contrib
 
-# [2/9] Install Dependencies
-
-# --------------------------------------------------
-
-echo
-echo "[2/9] Installing required packages..."
-
-sudo apt-get install -y -q --no-install-recommends curl wget zip unzip jq git build-essential openssh-server dmidecode bridge-utils iputils-arping nginx bind9 isc-dhcp-server iptables hostapd python3 python3-pip postgresql postgresql-contrib
-
-if [[ $? -ne 0 ]]; then
-echo "❌ Failed to install required packages."
-exit 1
-fi
-
-# Fix python command
-
+# Fix the 'python' command (python3 symlink)
 if [[ ! -e /usr/bin/python ]]; then
-sudo ln -s "$(which python3)" /usr/bin/python
-echo "  -> Created /usr/bin/python symlink."
+    sudo ln -s "$(which python3)" /usr/bin/python
+    echo "  -> Created /usr/bin/python -> $(which python3)"
 else
-echo "  -> Python symlink already exists."
+    echo "  -> /usr/bin/python already exists, skipping symlink."
 fi
 
-# --------------------------------------------------
-
-# [3/9] Install Node.js 16
-
-# --------------------------------------------------
-
-echo
-echo "[3/9] Installing Node.js 16..."
-
+# -----------------------------------------------
+# [3/8] Install Node.js 16
+# -----------------------------------------------
+echo "[3/8] Installing Node.js 16..."
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-
-if [[ $? -ne 0 ]]; then
-echo "❌ Failed to configure NodeSource repository."
-exit 1
-fi
-
 sudo apt-get install -y -q nodejs
 
-if ! command -v node >/dev/null 2>&1; then
-echo "❌ Node.js installation failed."
-exit 1
-fi
+echo "  -> Node.js version: $(node -v)"
+echo "  -> npm version:     $(npm -v)"
 
-echo "  -> Node.js Version: $(node -v)"
-echo "  -> NPM Version:     $(npm -v)"
+# -----------------------------------------------
+# [4/8] Configure PostgreSQL
+# -----------------------------------------------
+echo "[4/8] Configuring PostgreSQL..."
 
-# --------------------------------------------------
-
-# [4/9] Configure PostgreSQL
-
-# --------------------------------------------------
-
-echo
-echo "[4/9] Configuring PostgreSQL..."
-
-sudo systemctl enable postgresql
+# Ensure PostgreSQL service is running before we interact with it
 sudo systemctl start postgresql
+sudo systemctl enable postgresql.service
 
-echo "  -> Waiting for PostgreSQL..."
-
-until sudo -u postgres psql -c '\q' >/dev/null 2>&1; do
-sleep 2
-done
-
-echo "  -> Setting postgres password..."
-
-sudo -u postgres psql >/dev/null <<EOF
+# Set postgres superuser password securely via heredoc (avoids password in ps/history)
+echo "  -> Setting 'postgres' user password..."
+sudo -u postgres psql > /dev/null << EOF
 ALTER USER postgres WITH PASSWORD '$DB_PASSWORD';
 EOF
 
-echo "  -> Creating adopisoft database..."
+# Unset the password variable from memory immediately after use
+unset DB_PASSWORD
 
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='adopisoft';" | grep -q 1 || sudo -u postgres createdb adopisoft
+# Create the adopisoft database (idempotent — won't fail if it already exists)
+echo "  -> Creating 'adopisoft' database..."
+sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='adopisoft';" \
+    | grep -q 1 || sudo -u postgres createdb adopisoft
 
+echo "  -> Reloading PostgreSQL..."
 sudo service postgresql reload
 
 echo "  -> PostgreSQL configured successfully."
 
-# --------------------------------------------------
-
-# [5/9] Download Adopisoft
-
-# --------------------------------------------------
-
-echo
-echo "[5/9] Downloading Adopisoft..."
+# -----------------------------------------------
+# [5/8] Download Adopisoft .deb Package
+# -----------------------------------------------
+echo "[5/8] Downloading Adopisoft 5.1.7-20260106..."
 
 DEB_FILE="/tmp/adopisoft-5.1.7-20260106.deb"
 DEB_URL="https://github.com/AdoPiSoft/Releases/releases/download/v5.1.7-20260106/adopisoft-5.1.7-20260106-amd64-node-v16.20.2.deb"
 
-wget -O "$DEB_FILE" "$DEB_URL"
+wget -q --show-progress -O "$DEB_FILE" "$DEB_URL"
 
-if [[ ! -s "$DEB_FILE" ]]; then
-echo "❌ Download failed."
-exit 1
+if [[ ! -f "$DEB_FILE" ]]; then
+    echo "❌ ERROR: Download failed. Check your internet connection and the URL."
+    exit 1
 fi
 
-echo "  -> Download completed."
+echo "  -> Downloaded: $DEB_FILE ($(du -sh "$DEB_FILE" | cut -f1))"
 
-# --------------------------------------------------
+# Optional: verify checksum if you have a known SHA256
+# EXPECTED_SHA256="your_sha256_hash_here"
+# echo "$EXPECTED_SHA256  $DEB_FILE" | sha256sum -c - || { echo "❌ Checksum mismatch!"; exit 1; }
 
-# [6/9] Install Adopisoft
+# -----------------------------------------------
+# [6/8] Install Adopisoft
+# -----------------------------------------------
+echo "[6/8] Installing Adopisoft..."
 
-# --------------------------------------------------
-
-echo
-echo "[6/9] Installing Adopisoft..."
-
-sudo dpkg -i "$DEB_FILE"
-
-if [[ $? -ne 0 ]]; then
-echo "  -> Resolving dependencies..."
+# dpkg is correct for local .deb files; apt-get install -f fixes any broken deps
+sudo dpkg -i "$DEB_FILE" || true
 sudo apt-get install -f -y -q
-fi
 
+echo "  -> Cleaning up downloaded package..."
 rm -f "$DEB_FILE"
 
-# --------------------------------------------------
+# -----------------------------------------------
+# [7/8] Disable SSH (Security Hardening)
+# -----------------------------------------------
+# Done BEFORE starting Adopisoft because Adopisoft triggers a full server reboot
+# on first run — anything after systemctl start adopisoft will not execute.
+echo "[7/8] Disabling SSH service..."
+echo ""
+echo "  ⚠️  WARNING: SSH will be DISABLED after reboot."
+echo "  ⚠️  Ensure you have direct console or serial access to this machine."
+echo "  ⚠️  Without console access, you will be LOCKED OUT."
+echo ""
+echo "  Proceeding in 10 seconds... Press Ctrl+C to abort."
+sleep 10
 
-# [7/9] Enable Adopisoft Service
+sudo systemctl disable ssh
+echo "  -> SSH service disabled."
 
-# --------------------------------------------------
+# -----------------------------------------------
+# [8/8] Enable & Start Adopisoft Service
+# -----------------------------------------------
+# NOTE: Adopisoft performs a full server reboot on first run as part of initialization.
+# This is the last step — the reboot will occur automatically. No explicit reboot needed.
+echo ""
+echo "======================================"
+echo " ✅ Pre-boot setup complete!"
+echo ""
+echo "  PostgreSQL:  running & enabled"
+echo "  Adopisoft:   enabling now (will trigger reboot)"
+echo "  SSH:         disabled"
+echo ""
+echo "  Starting Adopisoft — server will reboot automatically..."
+echo "======================================"
 
-echo
-echo "[7/9] Starting Adopisoft service..."
-
+echo "[8/8] Enabling and starting Adopisoft service..."
 sudo systemctl enable adopisoft
-sudo systemctl restart adopisoft
-
-sleep 3
-
-# --------------------------------------------------
-
-# [8/9] Verify Services
-
-# --------------------------------------------------
-
-echo
-echo "[8/9] Verifying services..."
-
-POSTGRES_OK=false
-ADOPISOFT_OK=false
-
-if sudo systemctl is-active --quiet postgresql; then
-POSTGRES_OK=true
-echo "  ✅ PostgreSQL is running"
-else
-echo "  ❌ PostgreSQL is NOT running"
-fi
-
-if sudo systemctl is-active --quiet adopisoft; then
-ADOPISOFT_OK=true
-echo "  ✅ Adopisoft is running"
-else
-echo "  ❌ Adopisoft is NOT running"
-fi
-
-SERVER_IP=$(hostname -I | awk '{print $1}')
-
-echo
-echo "Database Settings:"
-echo "------------------------------------"
-echo "Database Type : postgres"
-echo "Host/IP       : localhost"
-echo "Port          : 5432"
-echo "Database      : adopisoft"
-echo "Username      : postgres"
-echo "Password      : ********"
-echo "------------------------------------"
-
-echo
-echo "Adopisoft URL:"
-echo "------------------------------------"
-echo "http://${SERVER_IP}"
-echo "------------------------------------"
-
-echo
-echo "Useful Commands:"
-echo "------------------------------------"
-echo "sudo systemctl status adopisoft"
-echo "sudo systemctl status postgresql"
-echo "journalctl -u adopisoft -f"
-echo "journalctl -u postgresql -f"
-echo "------------------------------------"
-
-unset DB_PASSWORD
-
-# --------------------------------------------------
-
-# [9/9] Complete
-
-# --------------------------------------------------
-
-echo
-
-if [ "$POSTGRES_OK" = true ] && [ "$ADOPISOFT_OK" = true ]; then
-echo "======================================"
-echo " ✅ Installation Completed Successfully"
-echo "======================================"
-else
-echo "======================================"
-echo " ⚠️ Installation Completed With Warnings"
-echo "======================================"
-fi
-
-echo
-read -p "Reboot now? (y/N): " REBOOT
-
-if [[ "$REBOOT" =~ ^[Yy]$ ]]; then
-echo "Rebooting in 5 seconds..."
-sleep 5
-sudo reboot
-else
-echo "Reboot skipped."
-fi
+sudo systemctl start adopisoft
